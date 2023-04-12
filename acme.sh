@@ -189,7 +189,7 @@ acme_standalone(){
         fi
     fi
     
-    bash ~/.acme.sh/acme.sh --install-cert -d ${domain} --key-file /root/private.key --fullchain-file /root/cert.crt --ecc
+    bash ~/.acme.sh/acme.sh --install-cert -d ${domain} --key-file /etc/ssl/private/private.key --fullchain-file /etc/ssl/private/cert.crt --ecc
     checktls
 }
 
@@ -213,7 +213,7 @@ acme_cfapiTLD(){
     else
         bash ~/.acme.sh/acme.sh --issue --dns dns_cf -d "${domain}" -k ec-256 --insecure
     fi
-    bash ~/.acme.sh/acme.sh --install-cert -d "${domain}" --key-file /root/private.key --fullchain-file /root/cert.crt --ecc
+    bash ~/.acme.sh/acme.sh --install-cert -d "${domain}" --key-file /etc/ssl/private/private.key --fullchain-file /etc/ssl/private/cert.crt --ecc
     checktls
 }
 
@@ -238,13 +238,13 @@ acme_cfapiNTLD(){
     else
         bash ~/.acme.sh/acme.sh --issue --dns dns_cf -d "*.${domain}" -d "${domain}" -k ec-256 --insecure
     fi
-    bash ~/.acme.sh/acme.sh --install-cert -d "*.${domain}" --key-file /root/private.key --fullchain-file /root/cert.crt --ecc
+    bash ~/.acme.sh/acme.sh --install-cert -d "*.${domain}" --key-file /etc/ssl/private/private.key --fullchain-file /etc/ssl/private/cert.crt --ecc
     checktls
 }
 
 checktls() {
-    if [[ -f /root/cert.crt && -f /root/private.key ]]; then
-        if [[ -s /root/cert.crt && -s /root/private.key ]]; then
+    if [[ -f /etc/ssl/private/cert.crt && -f /etc/ssl/private/private.key ]]; then
+        if [[ -s /etc/ssl/private/cert.crt && -s /etc/ssl/private/private.key ]]; then
             if [[ -n $(type -P wg-quick) && -n $(type -P wgcf) ]]; then
                 wg-quick up wgcf >/dev/null 2>&1
             fi
@@ -255,8 +255,8 @@ checktls() {
             sed -i '/--cron/d' /etc/crontab >/dev/null 2>&1
             echo "0 0 * * * root bash /root/.acme.sh/acme.sh --cron -f >/dev/null 2>&1" >> /etc/crontab
             green "证书申请成功! 脚本申请到的证书 (cert.crt) 和私钥 (private.key) 文件已保存到 /root 文件夹下"
-            yellow "证书crt文件路径如下: /root/cert.crt"
-            yellow "私钥key文件路径如下: /root/private.key"
+            yellow "证书crt文件路径如下: /etc/ssl/private/cert.crt"
+            yellow "私钥key文件路径如下: /etc/ssl/private/private.key"
             back2menu
         else
             if [[ -n $(type -P wg-quick) && -n $(type -P wgcf) ]]; then
@@ -290,7 +290,7 @@ revoke_cert() {
         bash ~/.acme.sh/acme.sh --revoke -d ${domain} --ecc
         bash ~/.acme.sh/acme.sh --remove -d ${domain} --ecc
         rm -rf ~/.acme.sh/${domain}_ecc
-        rm -f /root/cert.crt /root/private.key
+        rm -f /etc/ssl/private/cert.crt /etc/ssl/private/private.key
         green "撤销${domain}的域名证书成功"
         back2menu
     else
